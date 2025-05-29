@@ -1,146 +1,224 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Facebook, Eye, EyeOff } from "lucide-react"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Icons } from "@/components/ui/icons"
+import { Eye, EyeOff } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
+import { useRouter } from "next/navigation"
+
+const formSchema = z.object({
+  email: z.string().email("Email không hợp lệ"),
+  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+})
+
+type FormData = z.infer<typeof formSchema>
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [isLogin, setIsLogin] = useState(true)
+  const { toast } = useToast()
+  const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Handle login/register logic here
-    console.log({ email, password, isLogin })
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  })
+
+  async function onSubmit(data: FormData) {
+    setIsLoading(true)
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || "Đăng nhập không thành công.")
+      }
+
+      if (result.token) {
+        localStorage.setItem("authToken", result.token)
+        toast({
+          title: "Đăng nhập thành công!",
+          description: "Chào mừng bạn trở lại.",
+        })
+        router.push("/admin")
+      } else {
+        throw new Error("Không nhận được token.")
+      }
+
+    } catch (error: any) {
+      toast({
+        title: "Có lỗi xảy ra",
+        description: error.message || "Vui lòng thử lại sau.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <div
-      className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center bg-cover bg-center py-12"
-      style={{ backgroundImage: "url('/slider-images/backgroundLogin.png')" }}
-    >
-      <div className="w-full max-w-md rounded-lg p-8 shadow-xl backdrop-blur-sm">
-        <div className="flex flex-col items-center space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-100">
-            {isLogin ? "Đăng nhập vào tài khoản" : "Tạo tài khoản mới"}
-          </h1>
-          <p className="text-sm text-slate-300">
-            {isLogin ? "Nhập email và mật khẩu để đăng nhập" : "Nhập email và mật khẩu để tạo tài khoản"}
-          </p>
-        </div>
+    <div className="space-y-6">
+      <div className="space-y-2 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+          {isLogin ? "Đăng nhập vào tài khoản" : "Tạo tài khoản mới"}
+        </h1>
+        <p className="text-sm text-gray-600">
+          {isLogin
+            ? "Nhập email và mật khẩu để đăng nhập"
+            : "Nhập email và mật khẩu để tạo tài khoản"}
+        </p>
+      </div>
 
-        <div className="grid gap-6 mt-6">
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="email" className="text-slate-300">Email</Label>
-                <Input
-                  id="email"
-                  placeholder="name@example.com"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="bg-slate-700/50 border-slate-600 text-slate-100 placeholder:text-slate-400 focus:border-sky-500 focus:ring-sky-500"
-                />
-              </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-gray-700">Email</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    disabled={isLoading}
+                    placeholder="name@example.com"
+                    type="email"
+                    className="bg-gray-100/80 border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-sky-500 focus:ring-sky-500"
+                  />
+                </FormControl>
+                <FormMessage className="text-red-500" />
+              </FormItem>
+            )}
+          />
 
-              {email && (
-                <div className="grid gap-2">
-                  <Label htmlFor="password" className="text-slate-300">Mật khẩu</Label>
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-gray-700">Mật khẩu</FormLabel>
+                <FormControl>
                   <div className="relative">
                     <Input
-                      id="password"
+                      {...field}
+                      disabled={isLoading}
                       type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="bg-slate-700/50 border-slate-600 text-slate-100 placeholder:text-slate-400 focus:border-sky-500 focus:ring-sky-500 pr-10"
+                      className="bg-gray-100/80 border-gray-300 text-gray-900 placeholder:text-gray-500 pr-10 focus:border-sky-500 focus:ring-sky-500"
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute inset-y-0 right-0 flex items-center justify-center h-full px-3 text-slate-400 hover:text-slate-200 hover:bg-transparent"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-gray-200/80 text-gray-500 hover:text-gray-700"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
-                </div>
-              )}
+                </FormControl>
+                <FormMessage className="text-red-500" />
+              </FormItem>
+            )}
+          />
 
-              <Button type="submit" className="w-full">
-                {email ? (isLogin ? "Đăng nhập" : "Đăng ký") : "Tiếp tục"}
-              </Button>
-            </div>
-          </form>
+          <Button 
+            type="submit" 
+            className="w-full bg-sky-600 hover:bg-sky-700 text-white"
+            disabled={isLoading}
+          >
+            {isLoading && (
+              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            {isLogin ? "Đăng nhập" : "Đăng ký"}
+          </Button>
+        </form>
+      </Form>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-600" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-transparent px-2 text-slate-400">Hoặc tiếp tục với</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Button
-              variant="outline"
-              className="w-full bg-[#DB4437] hover:bg-[#c53d2e] text-white border-none"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mr-2 h-4 w-4"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 8v8" />
-                <path d="M8 12h8" />
-              </svg>
-              Google
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full bg-[#1877F2] hover:bg-[#166eeb] text-white border-none"
-            >
-              <Facebook className="mr-2 h-4 w-4" />
-              Facebook
-            </Button>
-          </div>
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-gray-300" />
         </div>
-
-        <div className="mt-4 text-center text-sm text-slate-300">
-          {isLogin ? (
-            <p>
-              Chưa có tài khoản?{" "}
-              <Button variant="link" className="p-0 h-auto text-sky-400 hover:text-sky-300" onClick={() => setIsLogin(false)}>
-                Đăng ký
-              </Button>
-            </p>
-          ) : (
-            <p>
-              Đã có tài khoản?{" "}
-              <Button variant="link" className="p-0 h-auto text-sky-400 hover:text-sky-300" onClick={() => setIsLogin(true)}>
-                Đăng nhập
-              </Button>
-            </p>
-          )}
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-white/90 px-2 text-gray-500">
+            Hoặc tiếp tục với
+          </span>
         </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Button
+          variant="outline"
+          disabled={isLoading}
+          onClick={() => {}} // TODO: Implement Google login
+          className="w-full bg-white hover:bg-gray-100 text-gray-700 border-gray-300"
+        >
+          <Icons.google className="mr-2 h-4 w-4" />
+          Google
+        </Button>
+        <Button
+          variant="outline"
+          disabled={isLoading}
+          onClick={() => {}} // TODO: Implement Facebook login
+          className="w-full bg-[#1877F2] hover:bg-[#166eeb] text-white border-transparent"
+        >
+          <Icons.facebook className="mr-2 h-4 w-4" />
+          Facebook
+        </Button>
+      </div>
+
+      <div className="text-center text-sm text-gray-600">
+        {isLogin ? (
+          <p>
+            Chưa có tài khoản?{" "}
+            <Button
+              variant="link"
+              className="p-0 h-auto text-sky-600 hover:text-sky-500"
+              onClick={() => setIsLogin(false)}
+            >
+              Đăng ký
+            </Button>
+          </p>
+        ) : (
+          <p>
+            Đã có tài khoản?{" "}
+            <Button
+              variant="link"
+              className="p-0 h-auto text-sky-600 hover:text-sky-500"
+              onClick={() => setIsLogin(true)}
+            >
+              Đăng nhập
+            </Button>
+          </p>
+        )}
       </div>
     </div>
   )

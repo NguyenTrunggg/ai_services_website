@@ -49,6 +49,7 @@ const menuItems = [
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null)
+  const [dichVuMenuOpen, setDichVuMenuOpen] = useState(false); // State for "Dịch vụ" dropdown hover
   const pathname = usePathname()
 
   const toggleSubmenu = (name: string) => {
@@ -65,43 +66,81 @@ export default function Header() {
 
           {/* Desktop navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            {menuItems.map((item) => (
-              <div key={item.name} className="relative">
-                {item.submenu ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="link"
-                        className={cn(
-                          "flex items-center gap-1 p-0",
-                          pathname.startsWith(item.href) && "font-medium text-primary",
-                        )}
-                      >
-                        {item.name}
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                      {item.submenu.map((subitem) => (
-                        <DropdownMenuItem key={subitem.name} asChild>
-                          <Link href={subitem.href}>{subitem.name}</Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "text-sm font-medium transition-colors hover:text-primary",
-                      pathname === item.href ? "text-primary" : "text-muted-foreground",
-                    )}
-                  >
-                    {item.name}
-                  </Link>
-                )}
-              </div>
-            ))}
+            {menuItems.map((item) => {
+              const isDichVuService = item.name === "Dịch vụ" && !!item.submenu;
+
+              return (
+                <div
+                  key={item.name}
+                  className="relative"
+                  onMouseEnter={() => {
+                    if (isDichVuService) {
+                      setDichVuMenuOpen(true);
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    if (isDichVuService) {
+                      setDichVuMenuOpen(false);
+                    }
+                  }}
+                >
+                  {item.submenu ? (
+                    <DropdownMenu
+                      open={isDichVuService ? dichVuMenuOpen : undefined}
+                      onOpenChange={isDichVuService ? setDichVuMenuOpen : undefined}
+                    >
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="link"
+                          className={cn(
+                            "p-0 text-base flex items-center",
+                            pathname.startsWith(item.href) && "font-medium",
+                            isDichVuService
+                              ? "text-muted-foreground hover:text-primary"
+                              : [
+                                  "gap-1",
+                                  pathname.startsWith(item.href)
+                                    ? "text-primary"
+                                    : "text-muted-foreground hover:text-primary"
+                                ]
+                          )}
+                        >
+                          {item.name}
+                          {!isDichVuService && <ChevronDown className="h-4 w-4" />}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start">
+                        {item.submenu.map((subitem) => (
+                          <DropdownMenuItem key={subitem.name} asChild>
+                            <Link
+                              href={subitem.href}
+                              onClick={() => {
+                                if (isDichVuService) {
+                                  setDichVuMenuOpen(false); // Close hover menu on item click
+                                }
+                                // Original mobile menu close logic is separate and handled in mobile view
+                              }}
+                            >
+                              {subitem.name}
+                            </Link>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "text-base font-medium transition-colors hover:text-primary",
+                        pathname === item.href ? "text-primary" : "text-muted-foreground",
+                      )}
+                    >
+                      {item.name}
+                    </Link>
+                  )}
+                </div>
+              )
+            })}
           </nav>
         </div>
 
