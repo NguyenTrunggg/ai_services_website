@@ -1,6 +1,7 @@
 import {
   Loader2,
   Facebook,
+  Phone,
   type LucideIcon,
 } from "lucide-react"
 
@@ -9,6 +10,31 @@ export type Icon = LucideIcon
 export const Icons = {
   spinner: Loader2,
   facebook: Facebook,
+  phone: Phone,
+  zalo: ({ ...props }) => (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="24" 
+      height="24" 
+      viewBox="0 0 24 24"
+      fill="currentColor" 
+      {...props}
+    >
+      <text 
+        x="50%" 
+        y="50%" 
+        dominantBaseline="middle" 
+        textAnchor="middle" 
+        fontSize="12"
+        fill="white"
+        fontFamily="sans-serif"
+        fontWeight="bold"
+      >
+        Zalo
+      </text>
+    </svg>
+  ),
+  messenger: Facebook,
   google: ({ ...props }) => (
     <svg
       aria-hidden="true"

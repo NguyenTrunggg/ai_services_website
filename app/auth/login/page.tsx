@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation"
 const formSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
   password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+  phoneNumber: z.string().min(10, "Số điện thoại phải có ít nhất 10 ký tự").optional(),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -39,18 +40,21 @@ export default function LoginPage() {
     defaultValues: {
       email: "",
       password: "",
+      phoneNumber: "",
     },
   })
 
   async function onSubmit(data: FormData) {
     setIsLoading(true)
     try {
-      const response = await fetch("/api/auth/login", {
+      const payload = isLogin ? { email: data.email, password: data.password } : data;
+
+      const response = await fetch(isLogin ? "/api/auth/login" : "/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       })
 
       const result = await response.json()
@@ -84,13 +88,13 @@ export default function LoginPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+        <h1 className="text-2xl font-semibold tracking-tight text-white">
           {isLogin ? "Đăng nhập vào tài khoản" : "Tạo tài khoản mới"}
         </h1>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-200">
           {isLogin
             ? "Nhập email và mật khẩu để đăng nhập"
-            : "Nhập email và mật khẩu để tạo tài khoản"}
+            : "Nhập email, mật khẩu và số điện thoại để tạo tài khoản"}
         </p>
       </div>
 
@@ -101,40 +105,62 @@ export default function LoginPage() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-700">Email</FormLabel>
+                <FormLabel className="text-gray-100">Email</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     disabled={isLoading}
                     placeholder="name@example.com"
                     type="email"
-                    className="bg-gray-100/80 border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-sky-500 focus:ring-sky-500"
+                    className="bg-gray-700/50 border-gray-500 text-white placeholder:text-gray-400 focus:border-sky-400 focus:ring-sky-400"
                   />
                 </FormControl>
-                <FormMessage className="text-red-500" />
+                <FormMessage className="text-red-400" />
               </FormItem>
             )}
           />
+
+          {!isLogin && (
+            <FormField
+              control={form.control}
+              name="phoneNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-100">Số điện thoại</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled={isLoading}
+                      placeholder="0123456789"
+                      type="tel"
+                      className="bg-gray-700/50 border-gray-500 text-white placeholder:text-gray-400 focus:border-sky-400 focus:ring-sky-400"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-400" />
+                </FormItem>
+              )}
+            />
+          )}
 
           <FormField
             control={form.control}
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-700">Mật khẩu</FormLabel>
+                <FormLabel className="text-gray-100">Mật khẩu</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       {...field}
                       disabled={isLoading}
                       type={showPassword ? "text" : "password"}
-                      className="bg-gray-100/80 border-gray-300 text-gray-900 placeholder:text-gray-500 pr-10 focus:border-sky-500 focus:ring-sky-500"
+                      className="bg-gray-700/50 border-gray-500 text-white placeholder:text-gray-400 pr-10 focus:border-sky-400 focus:ring-sky-400"
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute right-0 top-0 h-full px-3 hover:bg-gray-200/80 text-gray-500 hover:text-gray-700"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-gray-600/50 text-gray-300 hover:text-white"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
@@ -145,14 +171,14 @@ export default function LoginPage() {
                     </Button>
                   </div>
                 </FormControl>
-                <FormMessage className="text-red-500" />
+                <FormMessage className="text-red-400" />
               </FormItem>
             )}
           />
 
           <Button 
             type="submit" 
-            className="w-full bg-sky-600 hover:bg-sky-700 text-white"
+            className="w-full bg-sky-500 hover:bg-sky-600 text-white"
             disabled={isLoading}
           >
             {isLoading && (
@@ -165,10 +191,10 @@ export default function LoginPage() {
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-gray-300" />
+          <span className="w-full border-t border-gray-500" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white/90 px-2 text-gray-500">
+          <span className="bg-transparent px-2 text-gray-200">
             Hoặc tiếp tục với
           </span>
         </div>
@@ -179,7 +205,7 @@ export default function LoginPage() {
           variant="outline"
           disabled={isLoading}
           onClick={() => {}} // TODO: Implement Google login
-          className="w-full bg-white hover:bg-gray-100 text-gray-700 border-gray-300"
+          className="w-full bg-red-500 hover:bg-red-600 text-white border-transparent"
         >
           <Icons.google className="mr-2 h-4 w-4" />
           Google
@@ -195,13 +221,13 @@ export default function LoginPage() {
         </Button>
       </div>
 
-      <div className="text-center text-sm text-gray-600">
+      <div className="text-center text-sm text-gray-200">
         {isLogin ? (
           <p>
             Chưa có tài khoản?{" "}
             <Button
               variant="link"
-              className="p-0 h-auto text-sky-600 hover:text-sky-500"
+              className="p-0 h-auto text-sky-400 hover:text-sky-300"
               onClick={() => setIsLogin(false)}
             >
               Đăng ký
@@ -212,7 +238,7 @@ export default function LoginPage() {
             Đã có tài khoản?{" "}
             <Button
               variant="link"
-              className="p-0 h-auto text-sky-600 hover:text-sky-500"
+              className="p-0 h-auto text-sky-400 hover:text-sky-300"
               onClick={() => setIsLogin(true)}
             >
               Đăng nhập

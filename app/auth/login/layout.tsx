@@ -1,3 +1,4 @@
+"use client"
 import type React from "react"
 
 export default function LoginLayout({
@@ -10,16 +11,16 @@ export default function LoginLayout({
       {/* Background Image - Lightened or different image might be better for a light theme */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('/slider-images/backgroundLogin.png')" }} // Consider a lighter background image
+        style={{ backgroundImage: "url('/images/backgroundLogin.png')" }} // Consider a lighter background image
       >
         {/* Reduced overlay to make it brighter, or remove it entirely */}
         <div className="absolute inset-0 bg-black/20" /> 
       </div>
       
       {/* Login Form */}
-      <div className="relative z-10 flex min-h-screen items-center justify-center p-8">
-        {/* Changed to a light, slightly transparent background */}
-        <div className="w-full max-w-md rounded-lg bg-white/90 p-8 shadow-2xl backdrop-blur-sm">
+      <div className="relative z-10 flex min-h-screen items-center justify-start p-8 pl-60">
+        {/* Make the form background transparent */}
+        <div className="w-full max-w-md rounded-lg p-8 shadow-2xl backdrop-blur-sm">
           {children}
         </div>
       </div>

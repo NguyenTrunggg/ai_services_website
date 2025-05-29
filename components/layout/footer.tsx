@@ -24,17 +24,17 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-4">Chính sách</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/terms" className="text-muted-foreground hover:text-primary">
+                <Link href="#" className="text-muted-foreground hover:text-primary">
                   Điều khoản sử dụng
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="text-muted-foreground hover:text-primary">
+                <Link href="#" className="text-muted-foreground hover:text-primary">
                   Chính sách bảo mật
                 </Link>
               </li>
               <li>
-                <Link href="/refund" className="text-muted-foreground hover:text-primary">
+                <Link href="#" className="text-muted-foreground hover:text-primary">
                   Chính sách hoàn tiền
                 </Link>
               </li>

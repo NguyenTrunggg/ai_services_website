@@ -1,14 +1,55 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import HeroSlider from "@/components/home/hero-slider"
+// import HeroSlider from "@/components/home/hero-slider"
 import PricingTable from "@/components/home/pricing-table"
+import AnimatedSection from "@/components/motion/animated-section"
+
+const testimonials = [
+  {
+    name: "Nguyễn Văn A",
+    quote: "Dịch vụ tuyệt vời! AI đã giúp chúng tôi tự động hóa nhiều quy trình và tiết kiệm rất nhiều thời gian.",
+    image: "/images/customer.png", // Replace with actual image path
+  },
+  {
+    name: "Trần Thị B",
+    quote: "Chatbot hoạt động rất hiệu quả, khách hàng của tôi rất hài lòng với tốc độ phản hồi nhanh chóng.",
+    image: "/images/customer.png", // Replace with actual image path
+  },
+  {
+    name: "Lê Văn C",
+    quote: "Tính năng đăng bài tự động thật sự hữu ích, giúp chúng tôi duy trì sự hiện diện trên mạng xã hội một cách dễ dàng.",
+    image: "/images/customer.png", // Replace with actual image path
+  },
+  {
+    name: "Phạm Thị D",
+    quote: "Giao diện thân thiện, dễ sử dụng. Đội ngũ hỗ trợ rất nhiệt tình. Tôi rất hài lòng!",
+    image: "/images/customer.png", // Replace with actual image path
+  },
+]
 
 export default function Home() {
   return (
-    <div className="flex flex-col gap-16 py-8">
-      <HeroSlider />
+    <div className="flex flex-col gap-16">
+      {/* <HeroSlider /> */}
 
-      <section className="container">
+      {/* New Banner Section */}
+      <section 
+        className="relative w-full h-[550px] bg-cover bg-center"
+        style={{ backgroundImage: "url('/images/BannerHome.png')" }}
+      >
+        <div className="absolute top-[10%] left-[13.5%] w-[45%] h-[70%] md:w-[40%] md:h-[75%] rounded-lg overflow-hidden">
+          <video 
+            src="/images/VideoBannerHome.mp4" 
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+            className="w-full h-full object-cover"
+          />
+        </div>
+      </section>
+
+      <AnimatedSection className="container pt-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tight mb-4">Dịch vụ AI tự động hàng đầu</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -104,9 +145,9 @@ export default function Home() {
             </Button>
           </div>
         </div>
-      </section>
+      </AnimatedSection>
 
-      <section className="bg-slate-50 py-16">
+      <AnimatedSection className="bg-slate-50 py-16">
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight mb-4">Bảng giá dịch vụ</h2>
@@ -117,9 +158,9 @@ export default function Home() {
 
           <PricingTable />
         </div>
-      </section>
+      </AnimatedSection>
 
-      <section className="container">
+      <AnimatedSection className="container">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tight mb-4">Khách hàng của chúng tôi</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -127,18 +168,23 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="flex items-center justify-center p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {testimonials.map((testimonial, index) => (
+            <div 
+              key={index} 
+              className="flex flex-col items-center text-center p-6 border rounded-lg shadow-sm bg-white hover:shadow-xl transition-shadow duration-300 ease-in-out"
+            >
               <img
-                src={`/placeholder.svg?height=60&width=120&text=Logo ${i}`}
-                alt={`Client ${i}`}
-                className="h-12 opacity-70 grayscale hover:grayscale-0 hover:opacity-100 transition-all"
+                src={testimonial.image}
+                alt={`Khách hàng ${testimonial.name}`}
+                className="w-24 h-24 rounded-full mb-4 object-cover border-4 border-primary/20 shadow-md"
               />
+              <h3 className="text-xl font-semibold mb-2 text-primary">{testimonial.name}</h3>
+              <p className="text-muted-foreground text-sm italic">"{testimonial.quote}"</p>
             </div>
           ))}
         </div>
-      </section>
+      </AnimatedSection>
     </div>
   )
 }
